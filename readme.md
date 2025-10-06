@@ -39,4 +39,5 @@ The solution utilizes a customized RAG pipeline:
     ```bash
     python app.py
     ```
-
+### Demo
+https://drive.google.com/file/d/1abRjFoM_TEl92ch7PgU0j7kjff51lyJm/view?usp=sharing
