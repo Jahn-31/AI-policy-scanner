@@ -5,29 +5,29 @@ from sentence_transformers import SentenceTransformer
 import re
 from datetime import datetime
 
-# --- Load FAISS index and metadata ---
+
 print("Loading FAISS index and metadata...")
 index = faiss.read_index("faiss_index.index")
 
 with open("metadata.pkl", "rb") as f:
     metadata = pickle.load(f)
 
-# --- Load embedding model ---
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# --- Helper: Clean text ---
+#DATA CLEANING
 def clean_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-# --- Retrieve top chunks ---
+#GETTING TOP CHUNKS
 def retrieve_chunks(query, top_k=3):
     query_vector = model.encode([query]).astype("float32")
     distances, indices = index.search(query_vector, top_k)
     retrieved_chunks = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
     return retrieved_chunks
 
-# --- Smart semantic summarization ---
+#SEMANTIC SUMMARY
 def summarize_chunks(query, chunks, max_sentences=5):
     all_sentences = []
     for chunk in chunks:
@@ -37,11 +37,11 @@ def summarize_chunks(query, chunks, max_sentences=5):
     if not all_sentences:
         return "No meaningful sentences found in the retrieved chunks."
 
-    # Compute embeddings for query and all sentences
+    #COMPUTING EMBEDDINGS
     query_emb = model.encode([query])
     sent_embs = model.encode(all_sentences)
 
-    # Compute cosine similarities
+    # Computing cosine similarities
     similarities = np.dot(sent_embs, query_emb.T).flatten()
     ranked_indices = np.argsort(similarities)[::-1]
 
@@ -53,13 +53,13 @@ def summarize_chunks(query, chunks, max_sentences=5):
     summary = summary[:800]  # limit length
     return summary or "No relevant sentences found."
 
-# --- Save summary to file ---
+#SAVE SUMMARY TO THE FILE
 def save_summary_to_file(query, summary):
     with open("qa_history.txt", "a", encoding="utf-8") as f:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         f.write(f"\n[{timestamp}] Q: {query}\nA: {summary}\n{'-'*80}\n")
 
-# --- Main loop ---
+
 while True:
     query = input("\nEnter your question (or type 'exit' to quit): ")
     if query.lower() == "exit":
@@ -83,7 +83,7 @@ while True:
     print("\nSaved to qa_history.txt")
 
 
-# Function for UI Integration
+
 
 
 def generate_answer_for_ui(question, return_chunks=False):
@@ -93,10 +93,10 @@ def generate_answer_for_ui(question, return_chunks=False):
     if not chunks:
         return ("No relevant information found.", []) if return_chunks else "No relevant information found."
     
-    # Query-based summarization (simple heuristic)
+    
     combined_text = " ".join(chunks)
     
-    # Simple rule-based summarizer
+   
     lines = [line.strip() for line in combined_text.split(".") if line.strip()]
     summary = ""
     for line in lines:
